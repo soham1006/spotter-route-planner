@@ -60,11 +60,12 @@ def plan_trip(request):
         hos = plan_hos(route, cycle_used)
         daily_logs = build_daily_logs(hos["events"])
 
-    except requests.RequestException:
+    except requests.RequestException as error:
+        print(f"Mapping service error: {type(error).__name__}: {error}")
         return Response(
-            {"error": "Unable to reach the mapping service."},
-            status=502,
-        )
+        {"error": "Unable to reach the mapping service."},
+        status=502,
+    )
 
     except ValueError as error:
         return Response(
