@@ -5,7 +5,8 @@ NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
 
 HEADERS = {
-    "User-Agent": "SpotterRoutePlanner/1.0"
+    "User-Agent": "SpotterRoutePlanner/1.0",
+    "Referer": "https://spotter-route-planner-api-dz6z.onrender.com/",
 }
 
 
@@ -44,7 +45,7 @@ def calculate_route(locations):
 
     for index, location in enumerate(locations):
         if index > 0:
-            time.sleep(1)
+            time.sleep(2)
 
         coordinates.append(geocode_location(location))
 
