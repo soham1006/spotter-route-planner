@@ -1,32 +1,29 @@
 import requests
-import time
 
-NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+OPEN_METEO_GEOCODING_URL = (
+    "https://geocoding-api.open-meteo.com/v1/search"
+)
+
 OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
-
-HEADERS = {
-    "User-Agent": "SpotterRoutePlanner/1.0",
-    "Referer": "https://spotter-route-planner-api-dz6z.onrender.com/",
-}
 
 
 def geocode_location(location):
     params = {
-        "q": location,
-        "format": "jsonv2",
-        "limit": 1,
+        "name": location,
+        "count": 1,
+        "language": "en",
+        "format": "json",
     }
 
     response = requests.get(
-        NOMINATIM_URL,
+        OPEN_METEO_GEOCODING_URL,
         params=params,
-        headers=HEADERS,
         timeout=10,
     )
-
     response.raise_for_status()
 
-    results = response.json()
+    data = response.json()
+    results = data.get("results", [])
 
     if not results:
         raise ValueError(f"Location not found: {location}")
@@ -34,19 +31,24 @@ def geocode_location(location):
     result = results[0]
 
     return {
-        "lat": float(result["lat"]),
-        "lon": float(result["lon"]),
-        "display_name": result["display_name"],
+        "lat": float(result["latitude"]),
+        "lon": float(result["longitude"]),
+        "display_name": ", ".join(
+            part
+            for part in [
+                result.get("name"),
+                result.get("admin1"),
+                result.get("country"),
+            ]
+            if part
+        ),
     }
 
 
 def calculate_route(locations):
     coordinates = []
 
-    for index, location in enumerate(locations):
-        if index > 0:
-            time.sleep(2)
-
+    for location in locations:
         coordinates.append(geocode_location(location))
 
     coordinate_string = ";".join(
@@ -67,20 +69,27 @@ def calculate_route(locations):
         params=params,
         timeout=20,
     )
-
     response.raise_for_status()
 
     data = response.json()
 
     if data.get("code") != "Ok":
-        raise ValueError("No route could be found between the locations.")
+        raise ValueError(
+            "No route could be found between the locations."
+        )
 
     route = data["routes"][0]
 
     return {
         "coordinates": coordinates,
         "geometry": route["geometry"],
-        "distance_miles": round(route["distance"] / 1609.344, 2),
-        "duration_hours": round(route["duration"] / 3600, 2),
+        "distance_miles": round(
+            route["distance"] / 1609.344,
+            2,
+        ),
+        "duration_hours": round(
+            route["duration"] / 3600,
+            2,
+        ),
         "legs": route["legs"],
     }
