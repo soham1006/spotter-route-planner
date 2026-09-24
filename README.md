@@ -374,7 +374,7 @@ gunicorn config.wsgi:application
 https://spotter-route-planner-six.vercel.app/
 
 **GitHub Repository:**  
-YOUR_GITHUB_REPOSITORY_LINK
+https://github.com/soham1006/spotter-route-planner
 
 **Loom Demo:**  
 https://www.loom.com/share/9e301082703f481c8e91f59582a6a25d
